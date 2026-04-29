@@ -6,6 +6,8 @@ import { formatCurrency, STATUS_COLORS, STATUS_DOT } from "@/lib/invoice"
 import type { InvoiceStatus } from "@/types"
 import { cn } from "@/lib/utils"
 
+export const dynamic = "force-dynamic"
+
 function StatCard({
   label,
   value,

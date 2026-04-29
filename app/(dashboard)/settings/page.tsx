@@ -1,6 +1,8 @@
 import { getDefaultUser } from "@/lib/default-user"
 import SettingsForm from "@/components/SettingsForm"
 
+export const dynamic = "force-dynamic"
+
 export default async function SettingsPage() {
   const user = await getDefaultUser()
 

@@ -6,6 +6,8 @@ import { formatCurrency, STATUS_COLORS, STATUS_DOT } from "@/lib/invoice"
 import type { InvoiceStatus } from "@/types"
 import { cn } from "@/lib/utils"
 
+export const dynamic = "force-dynamic"
+
 export default async function InvoicesPage() {
   const { id: userId, currency } = await getDefaultUser()
   const invoices = await db.invoice.findMany({

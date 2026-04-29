@@ -1,6 +1,8 @@
 import { getDefaultUser } from "@/lib/default-user"
 import InvoiceForm from "@/components/invoice/InvoiceForm"
 
+export const dynamic = "force-dynamic"
+
 export default async function NewInvoicePage() {
   const user = await getDefaultUser()
 
