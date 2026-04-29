@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  name             String?
+  password         String?
+  image            String?
+  businessName     String?
+  businessLogo     String?
+  businessAddress  String?
+  bankName         String?
+  bankAccountName  String?
+  bankAccount      String?
+  signatureText    String?
+  currency         String     @default("NGN")
+  taxRate          Float      @default(0)
+  accounts         Account[]
+  sessions         Session[]
+  invoices         Invoice[]
+  templates        Template[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  number         String
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  clientName     String
+  clientEmail    String?
+  clientPhone    String?
+  clientAddress  String?
+  items          InvoiceItem[]
+  subtotal       Float
+  taxRate        Float         @default(0)
+  taxAmount      Float         @default(0)
+  total          Float
+  currency       String        @default("NGN")
+  status         InvoiceStatus @default(DRAFT)
+  dueDate        DateTime?
+  issueDate      DateTime      @default(now())
+  notes          String?
+  paymentMethod  String?
+  paymentDetails String?
+  thankYouNote   String?
+  signatureText  String?
+  shareToken     String        @unique @default(cuid())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([userId, number])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float
+  unitPrice   Float
+  amount      Float
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  data      Json
+  createdAt DateTime @default(now())
+}
