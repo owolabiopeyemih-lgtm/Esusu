@@ -5,6 +5,7 @@ import { z } from "zod"
 
 const schema = z.object({
   name: z.string().optional(),
+  email: z.string().email().optional(),
   businessName: z.string().optional(),
   businessLogo: z.string().optional(),
   businessAddress: z.string().optional(),
@@ -21,10 +22,20 @@ export async function PATCH(req: NextRequest) {
   const parsed = schema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 })
 
-  const user = await db.user.update({
-    where: { id },
-    data: parsed.data,
-  })
+  // Convert empty strings to null for nullable fields
+  const d = parsed.data
+  const data = {
+    ...d,
+    name:             d.name             || null,
+    businessName:     d.businessName     || null,
+    businessLogo:     d.businessLogo     || null,
+    businessAddress:  d.businessAddress  || null,
+    bankName:         d.bankName         || null,
+    bankAccountName:  d.bankAccountName  || null,
+    bankAccount:      d.bankAccount      || null,
+    signatureText:    d.signatureText    || null,
+  }
 
+  const user = await db.user.update({ where: { id }, data })
   return NextResponse.json(user)
 }
