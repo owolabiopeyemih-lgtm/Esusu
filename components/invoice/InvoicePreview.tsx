@@ -18,16 +18,20 @@ interface PreviewData {
   clientPhone: string
   clientAddress: string
   notes: string
+  termsAndConditions: string
   paymentMethod: string
   paymentDetails: string
+  bankName: string
+  bankAccountName: string
+  bankAccount: string
   thankYouNote: string
   sender: SenderInfo & { email: string }
 }
 
 export default function InvoicePreview({ data }: { data: PreviewData }) {
   const fmt = (n: number) => formatCurrency(n, data.currency)
-  const hasPayment = data.paymentMethod || data.paymentDetails || data.sender.bankAccount
-  const initial = (data.sender.businessName ?? data.sender.email)[0].toUpperCase()
+  const hasPayment = data.paymentMethod || data.bankAccount || data.paymentDetails || data.sender.bankAccount
+  const initial = (data.sender.businessName || data.sender.email || "?")[0].toUpperCase()
 
   return (
     <div className="bg-white rounded-2xl invoice-paper overflow-hidden text-gray-900 text-sm">
@@ -40,36 +44,20 @@ export default function InvoicePreview({ data }: { data: PreviewData }) {
         <div className="mb-7">
           <div className="flex justify-between items-start gap-6">
 
-            {/* Left: company identity */}
-            <div className="flex-1 min-w-0">
-              {/* Logo */}
+            {/* Left: logo only */}
+            <div className="shrink-0">
               {data.sender.businessLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={data.sender.businessLogo}
                   alt="Logo"
-                  className="h-16 w-auto max-w-[160px] object-contain mb-3"
+                  className="h-16 w-auto max-w-[160px] object-contain"
                 />
               ) : (
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black text-2xl mb-3">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black text-2xl">
                   {initial}
                 </div>
               )}
-
-              {/* Company name — large and prominent */}
-              <p className="font-black text-xl leading-tight tracking-tight text-gray-900">
-                {data.sender.businessName || data.sender.email}
-              </p>
-
-              {/* Full address */}
-              {data.sender.businessAddress && (
-                <p className="text-xs text-gray-500 mt-2 whitespace-pre-line leading-relaxed">
-                  {data.sender.businessAddress}
-                </p>
-              )}
-
-              {/* Email */}
-              <p className="text-xs text-gray-400 mt-1.5">{data.sender.email}</p>
             </div>
 
             {/* Right: invoice meta */}
@@ -86,12 +74,10 @@ export default function InvoicePreview({ data }: { data: PreviewData }) {
                   <span className="text-gray-400">Issued</span>
                   <span className="font-medium text-gray-700">{data.issueDate || "—"}</span>
                 </div>
-                {data.dueDate && (
-                  <div className="flex items-center justify-end gap-2">
-                    <span className="text-gray-400">Due</span>
-                    <span className="font-medium text-gray-700">{data.dueDate}</span>
-                  </div>
-                )}
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-gray-400">Due</span>
+                  <span className="font-medium text-gray-700">{data.dueDate || "—"}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -100,17 +86,30 @@ export default function InvoicePreview({ data }: { data: PreviewData }) {
           <div className="mt-6 border-t-2 border-gray-100" />
         </div>
 
-        {/* ── Bill To ── */}
-        <div className="bg-gray-50 rounded-xl p-4 mb-7">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Bill To</p>
-          {data.clientName
-            ? <p className="font-semibold text-gray-900">{data.clientName}</p>
-            : <p className="text-gray-300 italic text-xs">Client name will appear here</p>}
-          {data.clientEmail && <p className="text-xs text-gray-500 mt-0.5">{data.clientEmail}</p>}
-          {data.clientPhone && <p className="text-xs text-gray-500">{data.clientPhone}</p>}
-          {data.clientAddress && (
-            <p className="text-xs text-gray-500 whitespace-pre-line mt-1">{data.clientAddress}</p>
-          )}
+        {/* ── From / Bill To ── */}
+        <div className="grid grid-cols-2 gap-6 mb-7">
+          {/* From */}
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">From</p>
+            <p className="font-semibold text-gray-900">{data.sender.businessName || data.sender.email}</p>
+            {data.sender.businessAddress && (
+              <p className="text-xs text-gray-500 mt-1 whitespace-pre-line leading-relaxed">{data.sender.businessAddress}</p>
+            )}
+            <p className="text-xs text-gray-400 mt-0.5">{data.sender.email}</p>
+          </div>
+
+          {/* Bill To */}
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Bill To</p>
+            {data.clientName
+              ? <p className="font-semibold text-gray-900">{data.clientName}</p>
+              : <p className="text-gray-300 italic text-xs">Client name will appear here</p>}
+            {data.clientEmail && <p className="text-xs text-gray-500 mt-0.5">{data.clientEmail}</p>}
+            {data.clientPhone && <p className="text-xs text-gray-500">{data.clientPhone}</p>}
+            {data.clientAddress && (
+              <p className="text-xs text-gray-500 whitespace-pre-line mt-1">{data.clientAddress}</p>
+            )}
+          </div>
         </div>
 
         {/* ── Items table ── */}
@@ -161,20 +160,32 @@ export default function InvoicePreview({ data }: { data: PreviewData }) {
           </div>
         </div>
 
+        {/* ── Terms & Conditions ── */}
+        {data.termsAndConditions && (
+          <div className="text-xs text-gray-500 mb-6">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Terms &amp; Conditions</p>
+            <p className="whitespace-pre-line leading-relaxed">{data.termsAndConditions}</p>
+          </div>
+        )}
+
         {/* ── Payment details ── */}
         {hasPayment && (
           <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 mb-6 text-xs">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Payment Details</p>
             {data.paymentMethod && <p className="font-semibold text-gray-800">{data.paymentMethod}</p>}
-            {data.paymentDetails ? (
+            {(() => {
+              const bank = data.bankAccount ? data : data.sender.bankAccount ? { bankName: data.sender.bankName, bankAccountName: data.sender.bankAccountName, bankAccount: data.sender.bankAccount } : null
+              return bank?.bankAccount ? (
+                <div className="text-gray-600 space-y-0.5 mt-1">
+                  {bank.bankName && <p>{bank.bankName}</p>}
+                  {bank.bankAccountName && <p>{bank.bankAccountName}</p>}
+                  <p className="font-mono font-medium tracking-wide text-gray-800">{bank.bankAccount}</p>
+                </div>
+              ) : null
+            })()}
+            {data.paymentDetails && (
               <p className="text-gray-600 whitespace-pre-line mt-1 leading-relaxed">{data.paymentDetails}</p>
-            ) : data.sender.bankAccount ? (
-              <div className="text-gray-600 space-y-0.5 mt-1">
-                {data.sender.bankName && <p>{data.sender.bankName}</p>}
-                {data.sender.bankAccountName && <p>{data.sender.bankAccountName}</p>}
-                <p className="font-mono font-medium tracking-wide text-gray-800">{data.sender.bankAccount}</p>
-              </div>
-            ) : null}
+            )}
           </div>
         )}
 
@@ -185,26 +196,6 @@ export default function InvoicePreview({ data }: { data: PreviewData }) {
             <p className="whitespace-pre-line leading-relaxed">{data.notes}</p>
           </div>
         )}
-
-        {/* ── Signature row ── */}
-        <div className="flex justify-end mt-10 pt-6 border-t border-gray-100">
-          {/* Authorized signature */}
-          <div className="text-center w-48">
-            <div className="h-12 flex items-end justify-center pb-1 border-b border-gray-300">
-              {data.sender.signatureText && (
-                <span style={{ fontFamily: "cursive" }} className="text-2xl text-gray-700 leading-none">
-                  {data.sender.signatureText}
-                </span>
-              )}
-            </div>
-            <p className="text-[10px] font-medium text-gray-400 mt-1.5 uppercase tracking-widest">
-              Authorized Signature
-            </p>
-            {data.sender.businessName && (
-              <p className="text-xs text-gray-600 font-medium mt-0.5">{data.sender.businessName}</p>
-            )}
-          </div>
-        </div>
 
         {/* ── Thank you ── */}
         {data.thankYouNote && (

@@ -52,7 +52,11 @@ export default function InvoiceForm({ invoiceId, invoiceNumber, defaultValues, s
   const [issueDate, setIssueDate] = useState(defaultValues?.issueDate ?? new Date().toISOString().split("T")[0])
   const [dueDate, setDueDate] = useState(defaultValues?.dueDate ?? "")
   const [notes, setNotes] = useState(defaultValues?.notes ?? "")
+  const [termsAndConditions, setTermsAndConditions] = useState(defaultValues?.termsAndConditions ?? "Payment due in 3 days")
   const [paymentDetails, setPaymentDetails] = useState(defaultValues?.paymentDetails ?? "")
+  const [bankName, setBankName] = useState(defaultValues?.bankName ?? sender.bankName ?? "")
+  const [bankAccountName, setBankAccountName] = useState(defaultValues?.bankAccountName ?? sender.bankAccountName ?? "")
+  const [bankAccount, setBankAccount] = useState(defaultValues?.bankAccount ?? sender.bankAccount ?? "")
   const [thankYouNote, setThankYouNote] = useState(defaultValues?.thankYouNote ?? "Thank you for your business!")
   const [signatureText, setSignatureText] = useState(defaultValues?.signatureText ?? sender.signatureText ?? "")
 
@@ -84,8 +88,12 @@ export default function InvoiceForm({ invoiceId, invoiceNumber, defaultValues, s
     clientPhone,
     clientAddress,
     notes,
+    termsAndConditions,
     paymentMethod,
     paymentDetails,
+    bankName,
+    bankAccountName,
+    bankAccount,
     thankYouNote,
     sender: { ...sender, signatureText: signatureText || null },
   }
@@ -113,7 +121,7 @@ export default function InvoiceForm({ invoiceId, invoiceNumber, defaultValues, s
         body: JSON.stringify({
           clientName, clientEmail, clientPhone, clientAddress,
           issueDate, dueDate, currency, taxRate,
-          notes, paymentMethod, paymentDetails, thankYouNote,
+          notes, termsAndConditions, paymentMethod, paymentDetails, bankName, bankAccountName, bankAccount, thankYouNote,
           signatureText: signatureText || null,
           items: validItems,
           status,
@@ -169,7 +177,7 @@ export default function InvoiceForm({ invoiceId, invoiceNumber, defaultValues, s
                 <img src={sender.businessLogo} alt="logo" className="h-9 w-auto object-contain rounded-lg border" />
               ) : (
                 <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
-                  {(sender.businessName ?? sender.email)[0].toUpperCase()}
+                  {(sender.businessName || sender.email || "?")[0].toUpperCase()}
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -325,21 +333,65 @@ export default function InvoiceForm({ invoiceId, invoiceNumber, defaultValues, s
                   <SelectContent>{PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+
+              <Separator />
+
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">Bank Details</p>
+
               <div className="space-y-1.5">
-                <Label className="text-xs">Payment Details</Label>
+                <Label className="text-xs">Bank Name</Label>
+                <Input
+                  className="text-xs"
+                  placeholder="e.g. GTBank"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Account Name</Label>
+                <Input
+                  className="text-xs"
+                  placeholder="e.g. Acme Ltd"
+                  value={bankAccountName}
+                  onChange={(e) => setBankAccountName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Account Number</Label>
+                <Input
+                  className="text-xs font-mono"
+                  placeholder="0123456789"
+                  value={bankAccount}
+                  onChange={(e) => setBankAccount(e.target.value)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Additional Payment Notes</Label>
                 <Textarea
-                  rows={3}
+                  rows={2}
                   className="resize-none text-xs"
-                  placeholder={"GTBank — 0123456789\nAccount Name: Your Company Ltd"}
+                  placeholder="Any extra payment instructions…"
                   value={paymentDetails}
                   onChange={(e) => setPaymentDetails(e.target.value)}
                 />
-                {!paymentDetails && sender.bankAccount && (
-                  <p className="text-xs text-muted-foreground">
-                    Leave blank to use bank details from <a href="/settings" className="text-primary underline">Settings</a>
-                  </p>
-                )}
               </div>
+            </div>
+          </Section>
+
+          {/* TERMS & CONDITIONS */}
+          <Section title="Terms & Conditions">
+            <div className="space-y-1.5">
+              <Textarea
+                rows={4}
+                className="resize-y text-xs"
+                placeholder="Payment due in 3 days"
+                value={termsAndConditions}
+                onChange={(e) => setTermsAndConditions(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Appears on the invoice above payment details.</p>
             </div>
           </Section>
 
