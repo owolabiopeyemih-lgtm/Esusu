@@ -8,9 +8,10 @@ interface Props {
   href: string
   children: React.ReactNode
   exact?: boolean
+  compact?: boolean
 }
 
-export default function NavLink({ href, children, exact }: Props) {
+export default function NavLink({ href, children, exact, compact }: Props) {
   const pathname = usePathname()
   const active = exact ? pathname === href : pathname.startsWith(href)
 
@@ -18,10 +19,13 @@ export default function NavLink({ href, children, exact }: Props) {
     <Link
       href={href}
       className={cn(
-        "relative py-1 text-sm font-medium transition-colors",
+        "flex items-center gap-2.5 font-medium transition-all border-l-2",
+        compact
+          ? "px-2.5 py-1.5 text-xs rounded-sm"
+          : "pl-3 pr-3 py-1.5 text-sm",
         active
-          ? "text-foreground after:absolute after:inset-x-0 after:-bottom-[13px] after:h-0.5 after:rounded-full after:bg-primary"
-          : "text-muted-foreground hover:text-foreground"
+          ? "border-primary text-primary"
+          : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
       )}
     >
       {children}
